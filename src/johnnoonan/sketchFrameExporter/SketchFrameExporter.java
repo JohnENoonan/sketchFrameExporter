@@ -1,5 +1,8 @@
-package template.library;
+package johnnoonan.sketchFrameExporter;
 
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import processing.core.*;
 
@@ -14,37 +17,119 @@ import processing.core.*;
  * @example Hello 
  */
 
-public class HelloLibrary {
+public class SketchFrameExporter {
 	
 	// myParent is a reference to the parent sketch
 	PApplet myParent;
-
-	int myVariable = 0;
+	/*
+	 * Types of files that can be rendered
+	 */
+	public enum FileType {
+		PNG,
+		TIF,
+		TGA,
+		JPG
+	}
+		
+	private String outFolder;
+	private FileType fileType = FileType.PNG;
+	private String ext = "png";
+	private boolean performRender = false;
+	
+	private int frameNum = 0;
+	private String take;
+	private SimpleDateFormat dateFormat; 
+	
 	
 	public final static String VERSION = "##library.prettyVersion##";
-	
 
 	/**
-	 * a Constructor, usually called in the setup() method in your sketch to
-	 * initialize and start the Library.
-	 * 
-	 * @example Hello
+	 * a Constructor called in the setup
 	 * @param theParent the parent PApplet
 	 */
-	public HelloLibrary(PApplet theParent) {
+	public SketchFrameExporter(PApplet theParent) {
+		this(theParent, "data");
+	}
+	
+	/**
+	 * A Constructor called in the setup
+	 * @param theParent the parent PApplet
+	 * @param outFolder base folder to render out to
+	 */
+	public SketchFrameExporter(PApplet theParent, String outFolder) {
+		this.outFolder = outFolder;
 		myParent = theParent;
-		welcome();
+		dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+	}
+	
+	/**
+	 * Set the base output folder
+	 * @param newOutFolder base folder to render out to
+	 */
+	public void setOutFolder(String newOutFolder) {
+		outFolder = newOutFolder;
+	}
+	
+	/**
+	 * Set the output file type
+	 * @param newType Type of file to render out as 
+	 */
+	public void setExtension(FileType newType) {
+		switch(newType) {
+			case JPG:
+				ext = "jpg";
+				break;
+			case PNG:
+				ext = "png";
+				break;
+			case TGA:
+				ext = "tga";
+				break;
+			case TIF:
+				ext = "tif";
+				break;
+			default:
+				throw new IllegalArgumentException("Cannot set extension type to given value");
+		}
+		fileType = newType;
+	}
+	
+	/**
+	 * Start a new render into a new take with the current time stamp
+	 */
+	public void startRender() {
+		performRender = true;
+		take = dateFormat.format(new Date());
+	}
+	
+	/**
+	 * Stop the current render for this take
+	 */
+	public void stopRender() {
+		performRender = false;
+		frameNum = 0;
+	}
+	
+	/**
+	 * Render the current frame. This should be called after all work in draw() has been finished.
+	 * if startRender() has not been called this will not produce an image
+	 */
+	public void renderFrame() {
+		if (performRender) {
+			myParent.saveFrame(String.format("%s/%s/%06d.%s", outFolder, take, frameNum, ext));
+			frameNum++;
+		}
+	}
+	
+	/**
+	 * Get whether there is a current render take happening
+	 * @return whether calling renderFrame() will produce a frame
+	 */
+	public boolean isRendering() {
+		return performRender;
 	}
 	
 	
-	private void welcome() {
-		System.out.println("##library.name## ##library.prettyVersion## by ##author##");
-	}
-	
-	
-	public String sayHello() {
-		return "hello library.";
-	}
 	/**
 	 * return the version of the Library.
 	 * 
@@ -54,21 +139,5 @@ public class HelloLibrary {
 		return VERSION;
 	}
 
-	/**
-	 * 
-	 * @param theA the width of test
-	 * @param theB the height of test
-	 */
-	public void setVariable(int theA, int theB) {
-		myVariable = theA + theB;
-	}
-
-	/**
-	 * 
-	 * @return int
-	 */
-	public int getVariable() {
-		return myVariable;
-	}
 }
 
