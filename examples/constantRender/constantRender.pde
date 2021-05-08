@@ -25,5 +25,5 @@ void draw(){
   rad += inc;
   c %= 255;
   rad %= maxrad;
-  exporter.render();
+  exporter.renderFrame();
 }
